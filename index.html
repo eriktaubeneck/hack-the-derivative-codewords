@@ -187,24 +187,24 @@ $\Box$
 
 <p>For our purposes, we are attempting to find the derivative at a specific value of <code>$x = x_0$</code>, so our error is completely a function of <code>$h$</code> and <code>$\mathcal{E}(b, x_0)$</code> is a strictly monotonically increasing function (i.e. it decreases as <code>$h \to 0$</code>). Thus, it seems best that we should use <code>$h$</code> as small as possible. Implemented in Python:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">1</span>]:<span class="pl-k">def</span> finite_difference(f, x, h):
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">1</span>]:<span class="pl-k">def</span> finite_difference(f, x, h):
            <span class="pl-k">return</span> (f(x<span class="pl-k">+</span>h) <span class="pl-k">-</span> f(x))<span class="pl-k">/</span>h</pre></div>
 
 <p>To test this out:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">2</span>]: f <span class="pl-k">=</span> <span class="pl-k">lambda</span> <span class="pl-smi">x</span>: x<span class="pl-k">**</span><span class="pl-c1">2</span>
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">2</span>]: f <span class="pl-k">=</span> <span class="pl-k">lambda</span> <span class="pl-smi">x</span>: x<span class="pl-k">**</span><span class="pl-c1">2</span>
 In [<span class="pl-c1">3</span>]: <span class="pl-k">print</span> finite_difference(f, <span class="pl-c1">1.0</span>, <span class="pl-c1">0.00001</span>)
 Out[<span class="pl-c1">3</span>]: <span class="pl-c1">2.00001000001393</span></pre></div>
 
 <p>(Remember from Example 1 that <code>$f'(x) = 2x$</code> for <code>$f(x) = x^2$</code>, and so <code>$f'(1) = 2$</code>.) This is fairly accurate, but can take it further? As discussed earlier, we are using floating point numbers, so in Python we can try this out with the smallest float.</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">4</span>]: <span class="pl-k">import</span> sys
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">4</span>]: <span class="pl-k">import</span> sys
 In [<span class="pl-c1">5</span>]: <span class="pl-k">print</span> finite_difference(f, <span class="pl-c1">1.0</span>, sys.float_info.min)
 Out[<span class="pl-c1">5</span>]: <span class="pl-c1">0.0</span></pre></div>
 
 <p>This is clearly the wrong answer. Since <code>h = 0.00001</code> was reasonably small and worked before, you may be tempted to just use that. Unfortunately, it can break too: consider the case where <code>$x_0 = 10^{20}$</code>.</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">6</span>]: finite_difference(f, <span class="pl-c1">1.0e20</span>, <span class="pl-c1">0.00001</span>)
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">6</span>]: finite_difference(f, <span class="pl-c1">1.0e20</span>, <span class="pl-c1">0.00001</span>)
 Out[<span class="pl-c1">6</span>]: <span class="pl-c1">0.0</span>.</pre></div>
 
 <p>To understand what is happening here, we'll take a closer look at the floating point numbers.</p>
@@ -250,7 +250,7 @@ Out[<span class="pl-c1">6</span>]: <span class="pl-c1">0.0</span>.</pre></div>
 
 <p>This may seem obvious, but it means that the floating point numbers have gaps. For each floating point (except the largest one), there is a next one. More importantly, the gaps of between each floating point number and the next one change as the floating point numbers get larger. We can see this in Python:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">1</span>]: <span class="pl-k">import</span> sys
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">1</span>]: <span class="pl-k">import</span> sys
 In [<span class="pl-c1">2</span>]: plus_epsilon_identity(x, eps):
             <span class="pl-k">return</span> x <span class="pl-k">+</span> eps <span class="pl-k">==</span> x
 In [<span class="pl-c1">3</span>]: eps <span class="pl-k">=</span> sys.float_info.min
@@ -291,14 +291,14 @@ Out[10]: 11102.230246251565
 
 <p>where <code>$u = eps(1)$</code>. We can update our finite difference method accordingly:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">11</span>]: <span class="pl-k">def</span> finite_difference(f, x, <span class="pl-smi">h</span><span class="pl-k">=</span><span class="pl-c1">None</span>):
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">11</span>]: <span class="pl-k">def</span> finite_difference(f, x, <span class="pl-smi">h</span><span class="pl-k">=</span><span class="pl-c1">None</span>):
              <span class="pl-k">if</span> <span class="pl-k">not</span> h:
                  h <span class="pl-k">=</span> sqrt(eps(<span class="pl-c1">1.0</span>)) <span class="pl-k">*</span> <span class="pl-c1">max</span>(<span class="pl-c1">abs</span>(x), <span class="pl-c1">1.0</span>)
              <span class="pl-k">return</span> (f(x<span class="pl-k">+</span>h) <span class="pl-k">-</span> f(x))<span class="pl-k">/</span>h</pre></div>
 
 <p>We can test this out on some functions which we know the derivative of:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">12</span>]: <span class="pl-k">def</span> error(f, df, x):
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">12</span>]: <span class="pl-k">def</span> error(f, df, x):
              <span class="pl-k">return</span> <span class="pl-c1">abs</span>(finite_difference(f, x) <span class="pl-k">-</span> df(x))
 
 In [<span class="pl-c1">13</span>]: <span class="pl-k">def</span> error_rate(f, df, x):
@@ -441,7 +441,7 @@ $\Box$
 
 <p>Python has native support for complex numbers, so we can implement this as</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">1</span>]: <span class="pl-k">import</span> sys
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">1</span>]: <span class="pl-k">import</span> sys
 In [<span class="pl-c1">2</span>]: <span class="pl-k">def</span> complex_step_finite_diff(f, x):
            h <span class="pl-k">=</span> sys.float_info.min
            <span class="pl-k">return</span> (f(x<span class="pl-k">+</span>h<span class="pl-k">*</span><span class="pl-c1">1.0j</span>)).imag <span class="pl-k">/</span> h
@@ -455,7 +455,7 @@ Out[<span class="pl-c1">6</span>]: <span class="pl-c1">2e+20</span></pre></div>
 
 <p>The results here are stunning. We can formally test this out the same way as above:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">7</span>]: <span class="pl-k">def</span> cerror(f, df, x):
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">7</span>]: <span class="pl-k">def</span> cerror(f, df, x):
            <span class="pl-k">return</span> <span class="pl-c1">abs</span>(complex_step_finite_diff(f, x) <span class="pl-k">-</span> df(x))
 
 In [<span class="pl-c1">8</span>]: <span class="pl-k">def</span> cerror_rate(f, df, x):
@@ -479,7 +479,7 @@ Out[<span class="pl-c1">16</span>]: <span class="pl-c1">0.0</span></pre></div>
 
 <p>Again, stunning, but we can find <em>some</em> cases where it's not perfect:</p>
 
-<div class="highlight highlight-python"><pre>In [<span class="pl-c1">17</span>]: cerror_rate(f, df, <span class="pl-c1">1.0e5</span>)
+<div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">17</span>]: cerror_rate(f, df, <span class="pl-c1">1.0e5</span>)
 Out[<span class="pl-c1">17</span>]: <span class="pl-c1">.110933124815182e-16</span>
 In [<span class="pl-c1">18</span>]: f <span class="pl-k">=</span> <span class="pl-k">lambda</span> <span class="pl-smi">x</span>: cmath.exp(x) <span class="pl-k">/</span> cmath.sqrt(x)
 In [<span class="pl-c1">19</span>]: df <span class="pl-k">=</span> <span class="pl-k">lambda</span> <span class="pl-smi">x</span>: (cmath.exp(x)<span class="pl-k">*</span> (<span class="pl-c1">2</span><span class="pl-k">*</span>x <span class="pl-k">-</span> <span class="pl-c1">1</span>))<span class="pl-k">/</span>(<span class="pl-c1">2</span><span class="pl-k">*</span>x<span class="pl-k">**</span>(<span class="pl-c1">1.5</span>))
@@ -495,9 +495,13 @@ Out [<span class="pl-c1">23</span>]: <span class="pl-c1">OverflowError</span>: m
 <p>As you can see, the implementation of some complex functions have limitations. We also will not be able to use <code>abs</code> (it's imaginary part is <code>$0$</code> by definition) or a function with <code>$&lt;$</code> or <code>$&gt;$</code> in it (the complex numbers <a href="https://en.wikipedia.org/wiki/Complex_number#Ordering">are not ordered</a>).</p>
 
 <h2>
-<a id="user-content-conclusion" class="anchor" href="#conclusion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conclusion</h2>
+<a id="user-content-the-hack-in-the-details" class="anchor" href="#the-hack-in-the-details" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Hack in the Details</h2>
 
-<p>TODO</p>
+<p>This is not an unknown method: the ACM Transactions on Mathematical Software published an article on the subject, <a href="http://dl.acm.org/citation.cfm?id=838251"><em>The complex-step derivative approximation</em></a> by Martins, Sturdza, and Alonso, in 2003. It also is not the only alternative to finite differencing. In fact, SIAM (the Society for Industrial and Applied Mathematics) issued a volume, <a href="http://www.amazon.com/Computational-Differentiation-Applications-Proceedings-Mathematics/dp/0898713854">Computational Differentiation: Techniques, Applications, and Tools (Siam Proceedings in Applied Mathematics Series ; Vol. 89)</a>, on the topic. We've only managed to scratch the surface here, and I make no claims of this being the optimal solution. (The optimal solution is almost entirely contextual, anyways.) There is plenty of the computational differentiation rabbit hole to continue down.</p>
+
+<p>The advantage of this method, within the bounds that it works, over finite differencing is quite stark. Not only is it more accurate, but it also doesn't involve the extra search the right step size. Exploring these advantages, and comparing them not only to finite differencing, but all the other known methods, is beyond the scope an article such as this. Despite this, there is something quite interesting happening in the details here that offers a bit of insight into numerical computation. The "hack" that makes this work lies in the fact that <code>$f(x,0) = u(x,0)$</code> and the substitution using the Cauchy-Riemann equations. But in general, <code>$f(x,0) = u(x,0)$</code> is basically just the identity function. Yet somehow this gives us startlingly more accurate results.</p>
+
+<p>The devil is in the details, as it usually is. The problems with the finite-differencing methods arise from the fact that basic mathematical truths, such as <code>$x + \epsilon \ne x$</code> whenever <code>$\epsilon \ne 0$</code>, do not hold true in floating point arithmetic. It is not actually that surprising that this is the case. Take the number <code>$\pi$</code>, for example. Even with every atom in the visible universe acting as a bit in some hypothetical "universe computer", you would not be able to represent the whole thing. It goes on forever. And there are uncountably infinite more digits just the same way. In a lot of respects, it's quite amazing how accurate many calculations can be made with floating numbers, like <a href="https://en.wikipedia.org/wiki/Orbital_mechanics">orbital mechanics</a> and <a href="https://en.wikipedia.org/wiki/Heat_equation">heat equations</a>. It is important to remember that numerical computation is not abstract mathematics, and have an awareness of what is happening under the hood. This hack gives us a fun way of taking a peak, seeing where things break down, and use some other mathematics to patch it up.</p>
 
               </div>
             </div>
