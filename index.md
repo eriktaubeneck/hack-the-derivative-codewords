@@ -346,13 +346,14 @@ Using the definition of the derivative,
   \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,y+h) - v(x,y)}{h}.
 \end{equation}`
 
-We know `$\bar{z} \in \mathbb{R}$`, so we can substitute `$y = 0$`:
+We know `$\bar{z} \in \mathbb{R}$`, so we can substitute `$y = 0$` and `$v(x,0) = 0$`:
 
-`\begin{equation}
-  \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,h) - v(x,0)}{h}.
-\end{equation}`
+`\begin{eqnarray*}
+  \frac{\partial v}{\partial y} = && \lim_{h \to 0} \frac{v(x,h) - v(x,0)}{h} \\
+   = && \lim_{h \to 0} \frac{v(x,h)}{h}.
+\end{eqnarray*}`
 
-Now, since `$v(x,0) = 0$`, we can eliminate the subtraction operation that is susceptible to round of error:
+eliminating both addition/subtraction operations that are so susceptible to round of error!
 
 `\begin{equation}
   \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,h)}{h}.

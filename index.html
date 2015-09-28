@@ -88,20 +88,18 @@ $ python
 <h2>
 <a id="user-content-introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
-<p>The derivative (the mathematical flavor, not the financial) is one of the first things that a young calculus student learns. By the time they are formally taught it, it's likely that a student has already encountered the idea before; the slope of a line (rise over run!) is typically taught a couple years before. The student has likely already thought about the relationship between position, speed, and acceleration in physics, even if they have not seen it directly in a class.</p>
+<p>The derivative (the mathematical flavor, not the financial) is one of the first things that a young calculus student learns. By the time they are formally taught it, it's likely that a student has already encountered the idea before; the slope of a line (rise over run!) is typically taught a couple years before. The student has likely already thought about the relationship between position, speed, and acceleration in physics, even if they have not seen it directly in a class. Not only the first piece of calculus presented to young mathematicians, the derivative is one of the most important cornerstones of advanced mathematics, particularly in applied mathematics.</p>
 
-<p>It is not only the first piece of calculus that young mathematicians see; the derivative is one of the most important cornerstones of advanced mathematics, particularly in applied fields. Physics, statistics, economics, engineering, finance, and, yes, even computer science would not exist without the derivative. (There is plenty of other math, too, that they rely on as well.)</p>
+<p>Computing the derivative (as opposed to calculating it by hand) is a critical procedure in applied fields like physics, finance, and statistics. Standard approaches for this calculation exist, but as is always the case with computational mathematics, there are limits and tradeoffs.</p>
 
-<p>Computing the derivative (as opposed to calculating it by hand) has become a critical procedure in many of these applied fields, utilizing the power of the computer to magnify their work. Standard approaches for this calculation exist, but as is always the case with computational mathematics, there are limits and tradeoffs.</p>
+<p>When taking derivatives, we are typically working with the <a href="https://en.wikipedia.org/wiki/Real_number">real numbers</a>. The real numbers have a number of fancy mathematical properties that are incompatible with finite representation, whether that be on a piece of paper or in a computer. In fact, any single irrational numbers (say <code>$\pi$</code> or <code>$\sqrt{2}$</code>) cannot even be represented exactly in a computer. Modern 64-bit computers can however, do exact operations on the integers modulo 18,446,744,073,709,551,615, represented unsigned as <code>$\{z \in \mathbb{Z} \mid 0 &lt;= z &lt; 2^{64}-1 \}$</code> or signed as <code>$\{z \in \mathbb{Z} \mid -2^{63} &lt;= z &lt; 2^{63}-1 \}$</code>.</p>
 
-<p>Modern 64-bit computers can do exact operations on the <a href="https://en.wikipedia.org/wiki/Ring_(mathematics)">ring</a> of integers modulo 18,446,744,073,709,551,615, represented unsigned as <code>$\{z \in \mathbb{Z} \mid 0 &lt;= z &lt; 2^{64}-1 \}$</code> or signed as <code>$\{z \in \mathbb{Z} \mid -2^{63} &lt;= z &lt; 2^{63}-1 \}$</code>. But a ring only gets you addition, subtraction, and multiplication (note the auspicious absence of division.) When taking derivatives, we are typically working with the <a href="https://en.wikipedia.org/wiki/Real_number">real numbers</a> where we have division and more fancy properties. Unfortunately, the real numbers can not be represented in a computer. In fact, any of the irrational numbers (say <code>$\pi$</code> or <code>$\sqrt{2}$</code>) cannot individually be represented (even with all the atoms in the visible universe!)</p>
-
-<p><a href="https://en.wikipedia.org/wiki/Floating_point">Floating point numbers</a> are the computational approximation of the real numbers, and the work quite nicely for a great deal of calculations. They are just that, an approximation, which wields its ugly head in the most standard way of computing the derivative, the finite difference method. To understand that, we will look into the derivative itself and the implementation of the floating point numbers. Once we understand the issue at hand, we'll find an interesting solution in one of the most important theorems in modern mathematics, the <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Riemann_equations">Cauchy-Riemann equations</a>. To tee this up, we'll have to understand a little bit about the imaginary number (<code>$i$</code> in math, <code>j</code> in Python) and complex numbers. Then we'll be ready to hack the derivative.</p>
+<p>The standard computational approximation of the real numbers are the <a href="https://en.wikipedia.org/wiki/Floating_point">floating point numbers</a>, and they work quite nicely for a great deal of calculations. They are just that, an approximation, which wields its ugly head in the most standard way of computing the derivative. To understand that, we will look into the derivative itself and the implementation of the floating point numbers. Once we understand the issue at hand, we'll find an interesting solution in one of the most important theorems in modern mathematics, the <a href="https://en.wikipedia.org/wiki/Cauchy%E2%80%93Riemann_equations">Cauchy-Riemann equations</a>. To tee this up, we'll have to understand a little bit about the imaginary number (<code>$i$</code> in math, <code>j</code> in Python) and complex numbers. Then we'll be ready to hack the derivative.</p>
 
 <h2>
 <a id="user-content-the-derivative" class="anchor" href="#the-derivative" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Derivative</h2>
 
-<p>Informally, the derivative is a mathematical method for determining the slope of a line (that could be nonlinear), at a specific point. Slightly more formal, (but not mathematically rigorous, yet) the derivative tells us the slope of the tangent line which intersects the line at the specific point, as shown in the following image from <a href="https://en.wikipedia.org/wiki/Tangent#/media/File:Tangent_to_a_curve.svg">Wikipedia</a>:</p>
+<p>Informally, the derivative is a mathematical method for determining the slope of a possibly nonlinear a curve at a specific point, as shown in the following image from <a href="https://en.wikipedia.org/wiki/Tangent#/media/File:Tangent_to_a_curve.svg">Wikipedia</a>:</p>
 
 <p align="center">
 <a href="images/tangent.svg" target="_blank"><img src="images/tangent.svg" style="max-width:100%;"></a>
@@ -166,26 +164,9 @@ $\Box$
 <h2>
 <a id="user-content-finite-difference" class="anchor" href="#finite-difference" aria-hidden="true"><span class="octicon octicon-link"></span></a>Finite Difference</h2>
 
-<p>The most common approach for computationally estimating the derivative of a function is the <a href="https://en.wikipedia.org/wiki/Finite_difference_method"><em>finite difference method</em></a>. The basic idea is quite simple: take the definition of the derivative, but instead of taking the limit as <code>$h \to 0$</code>, we simple evaluate for a small <code>$h$</code>. The derivation, however, is a bit more involved, and uses the <a href="https://en.wikipedia.org/wiki/Taylor_series">Taylor Series expansion</a>:</p>
+<p>The most common approach for computationally estimating the derivative of a function is the <a href="https://en.wikipedia.org/wiki/Finite_difference_method"><em>finite difference method</em></a>. In the definition of the derivative, instead of taking the limit as <code>$h \to 0$</code>, we simply plug in a small <code>$h$</code>. It probably seems quite natural that the small the step we take the closer the approximation is to the true value. A curious reader can verify this using a <a href="https://en.wikipedia.org/wiki/Taylor_series">Taylor Series expansion</a>.</p>
 
-<p><code>\begin{eqnarray*}
-    f(x + h) &amp;&amp; = f(x) + \sum_{n = 1}^{\infty} \frac{f^{(n)}(x)}{n!}h^n \\
-             &amp;&amp; = f(x) + f'(x)h + \sum_{n = 2}^{\infty} \frac{f^{(n)}(x)}{n!}h^n
-\end{eqnarray*}</code></p>
-
-<p>where <code>$f^{(n)}$</code> is the <code>$n^{th}$</code> derivative of <code>$f$</code>. Solving for <code>$f'$</code>, we get</p>
-
-<p><code>\begin{eqnarray*}
-    f'(x) &amp;&amp; = \frac{f(x+h) - f(x)}{h} - \sum_{n = 1}^{\infty} \frac{f^{(n)}(x)}{n!}h^{(n-1)} \\
-\end{eqnarray*}</code></p>
-
-<p>and thus the error of such approximation is</p>
-
-<p><code>\begin{eqnarray*}
-    \mathcal{E}(h, x) = \sum_{n = 1}^{\infty} \frac{f^{(n)}(x)}{n!}h^{(n-1)}.
-\end{eqnarray*}</code></p>
-
-<p>For our purposes, we are attempting to find the derivative at a specific value of <code>$x = x_0$</code>, so our error is completely a function of <code>$h$</code> and <code>$\mathcal{E}(b, x_0)$</code> is a strictly monotonically increasing function (i.e. it decreases as <code>$h \to 0$</code>). Thus, it seems best that we should use <code>$h$</code> as small as possible. Implemented in Python:</p>
+<p>The finite difference method can be implemented in Python quite easily:</p>
 
 <div class="highlight highlight-source-python"><pre>In [<span class="pl-c1">1</span>]:<span class="pl-k">def</span> finite_difference(f, x, h):
            <span class="pl-k">return</span> (f(x<span class="pl-k">+</span>h) <span class="pl-k">-</span> f(x))<span class="pl-k">/</span>h</pre></div>
@@ -241,7 +222,14 @@ Out[<span class="pl-c1">6</span>]: <span class="pl-c1">0.0</span>.</pre></div>
   =  &amp;&amp; (5.916829373 \times 7.208209342) \times (10^{23} \times 10^{-51}).
 \end{eqnarray*}</code></p>
 
-<p>Due to associativity and commutativity, we can rearrange and compute these operations separately. This is not the case, however for addition and subtraction:</p>
+<p>This works great for multiplication and division (due to associativity and commutativity) as we can rearrange and compute these operations separately. This is not the case, however for addition and subtraction:</p>
+
+<p><code>\begin{eqnarray*}
+     &amp;&amp; (5.916829373 \times 10^{23}) + (7.208209342 \times 10^{-51}) \\
+  != &amp;&amp; (5.916829373 \times 7.208209341) + (10^{23} \times 10^{-51})
+\end{eqnarray*}</code></p>
+
+<p>and so we end up with having to round off. In fact, in this case, we loose the fact that we added anything at all!</p>
 
 <p><code>\begin{eqnarray*}
      &amp;&amp; (5.916829373 \times 10^{23}) + (7.208209342 \times 10^{-51}) \\
@@ -283,7 +271,7 @@ In [10]: eps(1.0e20)
 Out[10]: 11102.230246251565
 </code></pre>
 
-<p><a href="http://www.karenkopecky.net/Teaching/eco613614/Notes_NumericalDifferentiation.pdf">Lecture notes posted by Karen Kopecky</a> use the same Taylor series approximation of the error above, and ultimately sugest using</p>
+<p>It turns out that a good choice for <code>h</code> is[^1]</p>
 
 <p><code>\begin{equation}
     h = \sqrt{u} \times \max(\left \vert x \right \vert, 1)
@@ -321,7 +309,7 @@ Out[<span class="pl-c1">21</span>]: <span class="pl-c1">1.002014830004253</span>
 In [<span class="pl-c1">22</span>]: error_rate(f, df, <span class="pl-c1">1.0e20</span>)
 Out[<span class="pl-c1">22</span>]: <span class="pl-c1">0.9999999999998509</span></pre></div>
 
-<p>This is mostly pretty good. It's important to note that it's a bit unreasonable to try and calculate a periodic function (let alone the derivative) at a floating point number where the gaps are far bigger than the periodicity. For the others, however, we can do better. But we will have to use math.</p>
+<p>At this point we have essentially minimized the total error, both from the finite difference method and from computational round off.[^2] As such, it would be easy to think this is as good as it gets. Surprisingly, though, with the help of the complex numbers, we can take this even further.</p>
 
 <h2>
 <a id="user-content-complex-analysis" class="anchor" href="#complex-analysis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Complex Analysis</h2>
@@ -384,16 +372,16 @@ Out[<span class="pl-c1">22</span>]: <span class="pl-c1">0.9999999999998509</span
 <p>Given our function <code>$f: \mathbb{R} \to X \subseteq \mathbb{R}$</code>, we can rewrite as</p>
 
 <p><code>\begin{equation}
-  f(x) = f(x+iy) = u(x,y) + iv(x,y)
+  f(z) = f(x+iy) = u(x,y) + iv(x,y)
 \end{equation}</code></p>
 
-<p>Now, for the subset of <code>$\mathbb{C}$</code> such that <code>$\bar{z} \in \mathbb{R}$</code>, we know that <code>$y = 0$</code>. Then</p>
+<p>Now, for <code>$z \in \mathbb{C}$</code> we are only concerned with the subset of <code>$\bar{z} \in \mathbb{R}$</code>. This tells us that for <code>$\bar{z} = x + iy$</code>, we know that <code>$y = 0$</code>. Plugging this in</p>
 
 <p><code>\begin{equation}
-  f(\bar{z}) = f(x,0) = u(x,0) + iv(x,0).
+  f(\bar{z}) = f(x + i0) = u(x,0) + iv(x,0).
 \end{equation}</code></p>
 
-<p>Similarly, since <code>$f: \mathbb{R} \to X \subseteq \mathbb{R}$</code>, <code>$f(\bar{z}) \in \mathbb{R}$</code>. Then</p>
+<p>Similarly, we know that <code>$f: \mathbb{R} \to X \subseteq \mathbb{R}$</code>, <code>$f(\bar{z}) \in \mathbb{R}$</code>, which tells us that</p>
 
 <p><code>\begin{equation}
   v(x,0) = 0
@@ -404,6 +392,8 @@ Out[<span class="pl-c1">22</span>]: <span class="pl-c1">0.9999999999998509</span
 <p><code>\begin{equation}
   f(x,0) = u(x,0).
 \end{equation}</code></p>
+
+<p>We've done a bit of algebra here, but all we are really saying here is that <code>$f$</code> returns real values for real valued input. We are going to use this and the Cauchy Riemann equations to our advantage.</p>
 
 <p>We are attempting to estimate <code>$\frac{df}{\partial x}$</code>. Since for all <code>$\bar{z} \in \mathbb{R}$</code> we know <code>$f=u$</code>,</p>
 
@@ -416,23 +406,26 @@ Out[<span class="pl-c1">22</span>]: <span class="pl-c1">0.9999999999998509</span
   \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,y+h) - v(x,y)}{h}.
 \end{equation}</code></p>
 
-<p>Since <code>$y = 0$</code> for all <code>$\bar{z} \in \mathbb{R}$</code>,</p>
+<p>We know <code>$\bar{z} \in \mathbb{R}$</code>, so we can substitute <code>$y = 0$</code> and <code>$v(x,0) = 0$</code>:</p>
 
-<p><code>\begin{equation}
-  \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,h) - v(x,0)}{h}.
-\end{equation}</code></p>
+<p><code>\begin{eqnarray*}
+  \frac{\partial v}{\partial y} = &amp;&amp; \lim_{h \to 0} \frac{v(x,h) - v(x,0)}{h} \\
+   = &amp;&amp; \lim_{h \to 0} \frac{v(x,h)}{h}.
+\end{eqnarray*}</code></p>
 
-<p>Recall that <code>$v(x,0) = 0$</code>, so</p>
+<p>eliminating both addition/subtraction operations that are so susceptible to round of error!</p>
 
 <p><code>\begin{equation}
   \frac{\partial v}{\partial y} = \lim_{h \to 0} \frac{v(x,h)}{h}.
 \end{equation}</code></p>
 
-<p>Now, to estimate <code>$\frac{df}{\partial x} = \frac{\partial v}{\partial y}$</code>, for a very small <code>$h$</code></p>
+<p>Now, to estimate <code>$\frac{df}{\partial x} = \frac{\partial v}{\partial y}$</code>, we again use a very small <code>$h$</code></p>
 
 <p><code>\begin{equation}
   \frac{df}{\partial x} \approx \frac{v(x,h)}{h} = \frac{\mathfrak{Im}(f(x+ih))}{h}.
 \end{equation}</code></p>
+
+<p>This time, however, we will be able to use a much smaller <code>$h$</code>.</p>
 
 <p align="right"><code>
 $\Box$
@@ -502,6 +495,9 @@ Out [<span class="pl-c1">23</span>]: <span class="pl-c1">OverflowError</span>: m
 <p>The advantage of this method, within the bounds that it works, over finite differencing is quite stark. Not only is it more accurate, but it also doesn't involve the extra search the right step size. Exploring these advantages, and comparing them not only to finite differencing, but all the other known methods, is beyond the scope an article such as this. Despite this, there is something quite interesting happening in the details here that offers a bit of insight into numerical computation. The "hack" that makes this work lies in the fact that <code>$f(x,0) = u(x,0)$</code> and the substitution using the Cauchy-Riemann equations. But in general, <code>$f(x,0) = u(x,0)$</code> is basically just the identity function. Yet somehow this gives us startlingly more accurate results.</p>
 
 <p>The devil is in the details, as it usually is. The problems with the finite-differencing methods arise from the fact that basic mathematical truths, such as <code>$x + \epsilon \ne x$</code> whenever <code>$\epsilon \ne 0$</code>, do not hold true in floating point arithmetic. It is not actually that surprising that this is the case. Take the number <code>$\pi$</code>, for example. Even with every atom in the visible universe acting as a bit in some hypothetical "universe computer", you would not be able to represent the whole thing. It goes on forever. And there are uncountably infinite more digits just the same way. In a lot of respects, it's quite amazing how accurate many calculations can be made with floating numbers, like <a href="https://en.wikipedia.org/wiki/Orbital_mechanics">orbital mechanics</a> and <a href="https://en.wikipedia.org/wiki/Heat_equation">heat equations</a>. It is important to remember that numerical computation is not abstract mathematics, and have an awareness of what is happening under the hood. This hack gives us a fun way of taking a peak, seeing where things break down, and use some other mathematics to patch it up.</p>
+
+<p>[^1]: From <a href="http://www.karenkopecky.net/Teaching/eco613614/Notes_NumericalDifferentiation.pdf">lecture notes posted by Karen Kopecky.</a>
+[^2]: It's important to note that it's a bit unreasonable to try and calculate a periodic function (let alone the derivative) at a floating point number where the gaps are far bigger than the periodicity.</p>
 
               </div>
             </div>
